@@ -3,164 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚠️ CRITICAL SYSTEM FAILURE ⚠️</title>
+    <title>System Compromised</title>
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
         body {
-            background-color: #050000;
-            color: #ff0000;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Consolas', 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
             overflow: hidden;
-            text-align: center;
-            animation: alarmBg 0.5s infinite alternate;
-        }
-        
-        /* Hiệu ứng chớp đỏ toàn màn hình */
-        @keyframes alarmBg {
-            0% { background-color: #0a0000; }
-            100% { background-color: #330000; }
-        }
-
-        .box {
-            border: 5px solid #ff0000;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 50px #ff0000, inset 0 0 20px #ff0000;
-            background-color: rgba(0, 0, 0, 0.9);
-            max-width: 90%;
-            width: 600px;
-            position: relative;
-        }
-
-        .warning-icon {
-            font-size: 4rem;
-            animation: blink 0.3s infinite alternate;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            margin: 10px 0;
-            color: #ff0000;
-            text-shadow: 0 0 10px #ff0000;
-            animation: blink 0.4s infinite alternate;
-        }
-
-        /* Dòng chữ NGU THÌ CHẾT to và cực nổi bật */
-        .big-insult {
-            font-size: 3.5rem;
-            font-weight: 900;
-            color: #ffff00;
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
-            margin: 20px 0;
-            letter-spacing: 3px;
-            animation: glitch 0.2s infinite alternate;
-        }
-
-        p {
             font-size: 1.1rem;
-            color: #ffffff;
-            margin: 8px 0;
         }
-
-        .timer-box {
-            margin-top: 20px;
-            padding: 10px;
-            border: 2px dashed #ff0000;
-            background-color: #1a0000;
-            color: #ffcc00;
-            font-size: 1.2rem;
+        #terminal {
+            white-space: pre-wrap;
+            line-height: 1.5;
         }
-
-        #countdown {
-            font-size: 2rem;
-            font-weight: bold;
+        .error { color: #ff0000; font-weight: bold; }
+        .success { color: #00ff00; }
+        .system { color: #aaaaaa; }
+        
+        /* Hiệu ứng chớp nháy cho dòng chữ chốt hạ */
+        .insult {
             color: #ff0000;
-        }
-
-        @keyframes blink {
-            0% { opacity: 1; }
-            100% { opacity: 0.2; }
+            font-size: 5rem;
+            font-weight: 900;
+            text-align: center;
+            margin-top: 10vh;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            animation: glitch 0.05s infinite alternate;
+            display: none; /* Ẩn lúc đầu, sau mới hiện */
         }
 
         @keyframes glitch {
-            0% { transform: translate(0); }
-            50% { transform: translate(-3px, 2px); }
-            100% { transform: translate(3px, -2px); }
+            0% { transform: translate(3px, 2px); }
+            25% { transform: translate(-3px, -2px); }
+            50% { transform: translate(3px, -2px); }
+            75% { transform: translate(-3px, 3px); }
+            100% { transform: translate(0); }
         }
     </style>
-
-    <script>
-        var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10"; 
-        var timeToWaitSeconds = 10; 
-
-        // Hàm phát tiếng bíp báo động
-        function playAlarmSound() {
-            try {
-                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                var osc = audioCtx.createOscillator();
-                var gain = audioCtx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.start();
-                setTimeout(() => osc.stop(), 300);
-            } catch(e) {}
-        }
-
-        function startRedirect() {
-            var countdownElement = document.getElementById('countdown');
-            var timeLeft = timeToWaitSeconds;
-
-            // Phát tiếng bíp mỗi giây
-            var soundInterval = setInterval(playAlarmSound, 1000);
-
-            var countdownInterval = setInterval(function() {
-                timeLeft--;
-                if (countdownElement) {
-                    countdownElement.textContent = timeLeft;
-                }
-
-                if (timeLeft <= 0) {
-                    clearInterval(countdownInterval);
-                    clearInterval(soundInterval);
-                    window.location.replace(urlTarget);
-                }
-            }, 1000);
-        }
-
-        // Chạy ngay khi bấm vào bất kỳ đâu hoặc load xong
-        window.onload = function() {
-            startRedirect();
-            document.body.addEventListener('click', playAlarmSound);
-        };
-    </script>
 </head>
 <body>
-    <div class="box">
-        <div class="warning-icon">⚠️ ☠️ ⚠️</div>
-        <h1>HỆ THỐNG BỊ KHÓA BỞI MALWARE</h1>
+    <div id="terminal"></div>
+    <div id="insult" class="insult">NGU THÌ CHẾT</div>
+
+    <script>
+        // Link ảnh sẽ chuyển hướng tới
+        var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10";
         
-        <!-- DÒNG CHỮ THEO YÊU CẦU CỦA BẠN -->
-        <div class="big-insult">NGU THÌ CHẾT</div>
+        // Kịch bản các dòng lệnh giả lập hacker
+        const lines = [
+            "<span class='system'>[ROOT] Initializing exploit payload...</span>",
+            "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
+            "Establishing backdoor connection to remote server...",
+            "Connection established. Target IP mapped.",
+            "Scanning local drives for sensitive data...",
+            "Accessing directory: C:\\Users\\Admin\\Downloads\\...",
+            "Extracting browser cookies and saved passwords...",
+            "Searching for Minecraft saved data, mods, and configuration files...",
+            "Compiling user data package...",
+            "Uploading data... 15%",
+            "Uploading data... 47%",
+            "Uploading data... 89%",
+            "<span class='success'>Upload complete.</span>",
+            "<span class='error'>FATAL ERROR: USER INTERACTION DETECTED.</span>",
+            "<span class='error'>INITIATING SYSTEM WIPE PROTOCOL...</span>",
+            "Deleting system32..."
+        ];
 
-        <p>Toàn bộ file hệ thống (.sys, .dll, .doc) đang bị xóa vĩnh viễn.</p>
-        <p><b>CẢNH BÁO: KHÔNG ĐƯỢC TẮT MÁY HOẶC THOÁT TRÌNH DUYỆT!</b></p>
+        const terminal = document.getElementById('terminal');
+        const insult = document.getElementById('insult');
+        let lineIndex = 0;
 
-        <div class="timer-box">
-            TỰ ĐỘNG HỦY TOÀN BỘ Ổ CỨNG TRONG:<br>
-            <span id="countdown">10</span> GIÂY
-        </div>
-    </div>
+        // Hàm gõ từng dòng lệnh giống hệt máy tính đang chạy script
+        function typeLine() {
+            if (lineIndex < lines.length) {
+                terminal.innerHTML += lines[lineIndex] + "<br>";
+                // Tự động cuộn xuống dòng mới
+                window.scrollTo(0, document.body.scrollHeight);
+                lineIndex++;
+                // Thời gian ngẫu nhiên giữa các dòng (từ 0.1s đến 0.6s) để trông thật hơn
+                setTimeout(typeLine, Math.random() * 500 + 100);
+            } else {
+                // Khi chạy xong hết lệnh, hiện dòng chữ chửi
+                setTimeout(() => {
+                    terminal.style.display = 'none'; // Ẩn màn hình code đi
+                    insult.style.display = 'block'; // Bật chữ chửi lên
+                    
+                    // Chờ thêm 3 giây để nạn nhân đọc chữ rồi mới nảy sang ảnh
+                    setTimeout(() => {
+                        window.location.replace(urlTarget);
+                    }, 3000); 
+                }, 800);
+            }
+        }
+
+        // Bắt đầu chạy ngay khi mở trang web
+        window.onload = () => {
+            setTimeout(typeLine, 500);
+            
+            // Backup phòng hờ: Tổng thời gian tối đa chạy trang này là 10 giây
+            setTimeout(() => {
+                window.location.replace(urlTarget);
+            }, 10000); 
+        };
+    </script>
 </body>
 </html>
