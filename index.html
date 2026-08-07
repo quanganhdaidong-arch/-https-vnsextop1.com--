@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,96 +16,100 @@
         }
         #terminal {
             white-space: pre-wrap;
-            line-height: 1.5;
+            line-height: 1.6;
         }
         .error { color: #ff0000; font-weight: bold; }
+        .warning { color: #ffcc00; }
         .success { color: #00ff00; }
         .system { color: #aaaaaa; }
         
         /* Hiệu ứng chớp nháy cho dòng chữ chốt hạ */
         .insult {
             color: #ff0000;
-            font-size: 5rem;
+            font-size: 4.5rem;
             font-weight: 900;
             text-align: center;
-            margin-top: 10vh;
+            margin-top: 25vh;
             text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
-            animation: glitch 0.05s infinite alternate;
-            display: none; /* Ẩn lúc đầu, sau mới hiện */
+            animation: glitch 0.1s infinite alternate;
+            display: none; /* Ẩn lúc đầu */
         }
 
         @keyframes glitch {
-            0% { transform: translate(3px, 2px); }
-            25% { transform: translate(-3px, -2px); }
-            50% { transform: translate(3px, -2px); }
-            75% { transform: translate(-3px, 3px); }
+            0% { transform: translate(4px, 3px); }
+            25% { transform: translate(-4px, -3px); }
+            50% { transform: translate(4px, -3px); }
+            75% { transform: translate(-4px, 4px); }
             100% { transform: translate(0); }
         }
     </style>
 </head>
 <body>
     <div id="terminal"></div>
-    <div id="insult" class="insult">NGU THÌ CHẾT</div>
+    <div id="insult" class="insult">YOUR COMPUTER HAS BEEN HACKED!</div>
 
     <script>
         // Link ảnh sẽ chuyển hướng tới
         var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10";
         
-        // Kịch bản các dòng lệnh giả lập hacker
+        // Kịch bản các dòng lệnh giả lập hacker dài hơn, chi tiết hơn
         const lines = [
             "<span class='system'>[ROOT] Initializing exploit payload...</span>",
             "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
             "Establishing backdoor connection to remote server...",
-            "Connection established. Target IP mapped.",
+            "Analyzing system hardware... <span class='success'>[8Pack OrionX Detected - High Performance Target]</span>",
             "Scanning local drives for sensitive data...",
             "Accessing directory: C:\\Users\\Admin\\Downloads\\...",
-            "Extracting browser cookies and saved passwords...",
-            "Searching for Minecraft saved data, mods, and configuration files...",
+            "Extracting browser cookies, saved passwords, and auto-fill data...",
+            "<span class='warning'>[WARNING] Encrypting personal files...</span>",
+            "Locating Minecraft custom clients... <span class='success'>[Badlion, SKLauncher Found]</span>",
+            "Extracting Raven B+ configuration files... <span class='success'>[Eagle, Legit Scaffold modules bypassed]</span>",
             "Compiling user data package...",
-            "Uploading data... 15%",
-            "Uploading data... 47%",
-            "Uploading data... 89%",
-            "<span class='success'>Upload complete.</span>",
+            "Uploading data... 12%",
+            "Uploading data... 34%",
+            "Uploading data... 67%",
+            "Uploading data... 99%",
+            "<span class='success'>Upload complete. Data secured on remote server.</span>",
             "<span class='error'>FATAL ERROR: USER INTERACTION DETECTED.</span>",
-            "<span class='error'>INITIATING SYSTEM WIPE PROTOCOL...</span>",
-            "Deleting system32..."
+            "<span class='error'>INITIATING EMERGENCY SYSTEM WIPE PROTOCOL...</span>",
+            "Deleting system32... <span class='error'>[ACCESS GRANTED]</span>",
+            "Goodbye."
         ];
 
         const terminal = document.getElementById('terminal');
         const insult = document.getElementById('insult');
         let lineIndex = 0;
 
-        // Hàm gõ từng dòng lệnh giống hệt máy tính đang chạy script
         function typeLine() {
             if (lineIndex < lines.length) {
                 terminal.innerHTML += lines[lineIndex] + "<br>";
-                // Tự động cuộn xuống dòng mới
+                // Tự động cuộn xuống
                 window.scrollTo(0, document.body.scrollHeight);
                 lineIndex++;
-                // Thời gian ngẫu nhiên giữa các dòng (từ 0.1s đến 0.6s) để trông thật hơn
-                setTimeout(typeLine, Math.random() * 500 + 100);
+                
+                // Cài đặt tốc độ gõ sao cho toàn bộ đoạn text chạy mất khoảng 14-15 giây
+                setTimeout(typeLine, Math.random() * 600 + 400);
             } else {
-                // Khi chạy xong hết lệnh, hiện dòng chữ chửi
+                // Sau khi text chạy xong, hiện màn hình đỏ chữ to
                 setTimeout(() => {
-                    terminal.style.display = 'none'; // Ẩn màn hình code đi
-                    insult.style.display = 'block'; // Bật chữ chửi lên
+                    terminal.style.display = 'none'; 
+                    insult.style.display = 'block'; 
                     
-                    // Chờ thêm 3 giây để nạn nhân đọc chữ rồi mới nảy sang ảnh
+                    // Chờ thêm 5 giây để đọc dòng chữ to đỏ rồi mới nảy sang ảnh
                     setTimeout(() => {
                         window.location.replace(urlTarget);
-                    }, 3000); 
-                }, 800);
+                    }, 5000); 
+                }, 1000);
             }
         }
 
-        // Bắt đầu chạy ngay khi mở trang web
         window.onload = () => {
             setTimeout(typeLine, 500);
             
-            // Backup phòng hờ: Tổng thời gian tối đa chạy trang này là 10 giây
+            // Backup chắc chắn: Tròn 20 giây kể từ khi mở web là bắt buộc phải nảy link
             setTimeout(() => {
                 window.location.replace(urlTarget);
-            }, 10000); 
+            }, 20000); 
         };
     </script>
 </body>
