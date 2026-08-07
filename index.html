@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>⚠️ CẢNH BÁO NGUY HIỂM ⚠️</title>
-    <!-- Tự động nhảy sang link khác sau 5 giây (thay link ở dưới) -->
-    <meta http-equiv="refresh" content="5; url=https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10>
     <style>
         body {
             background-color: #000;
@@ -18,41 +16,91 @@
             height: 100vh;
             margin: 0;
             text-align: center;
+            overflow: hidden;
         }
         .box {
-            border: 3px solid #ff0000;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 0 20px #ff0000;
+            border: 4px solid #ff0000;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px #ff0000;
             background-color: #110000;
-            max-width: 80%;
+            max-width: 85%;
+            animation: pulse 2s infinite;
         }
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            animation: blink 0.8s infinite;
+            font-size: 3rem;
+            margin-bottom: 15px;
+            animation: blink 0.6s infinite;
         }
         p {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             color: #fff;
+            margin: 10px 0;
         }
-        .timer {
+        .warning-icon {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+        .timer-container {
+            margin-top: 25px;
+            font-size: 1.2rem;
             color: #ffcc00;
+        }
+        #countdown {
             font-weight: bold;
+            font-size: 1.5rem;
         }
         @keyframes blink {
             0% { opacity: 1; }
             50% { opacity: 0; }
             100% { opacity: 1; }
         }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 20px #ff0000; }
+            50% { box-shadow: 0 0 40px #ff0000, 0 0 10px #ff0000 inset; }
+            100% { box-shadow: 0 0 20px #ff0000; }
+        }
     </style>
+
+    <script>
+        // --- ĐÃ ĐỔI LINK TẠI ĐÂY ---
+        var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10"; 
+        
+        // Thời gian chờ (tính bằng giây) trước khi chuyển hướng
+        var timeToWaitSeconds = 5; 
+        // ------------------------
+
+        function startRedirect() {
+            var countdownElement = document.getElementById('countdown');
+            var timeLeft = timeToWaitSeconds;
+
+            var countdownInterval = setInterval(function() {
+                timeLeft--;
+                if (countdownElement) {
+                    countdownElement.textContent = timeLeft;
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    window.location.replace(urlTarget);
+                }
+            }, 1000);
+        }
+
+        window.onload = startRedirect;
+    </script>
 </head>
 <body>
     <div class="box">
-        <h1>⚠️ HỆ THỐNG BỊ XÂM NHẬP ⚠️</h1>
-        <p>Phát hiện <b>Trojan.Win32.Malware</b> trên máy tính của bạn!</p>
-        <p>Toàn bộ dữ liệu đang bị mã hóa...</p>
-        <p class="timer">Tự động hủy tệp sau 5 giây!</p>
+        <div class="warning-icon">⚠️</div>
+        <h1>HỆ THỐNG ĐÃ BỊ NHIỄM VIRUS</h1>
+        <p>Phát hiện mã độc nguy hiểm: <b>Win32.Malware.Gen</b></p>
+        <p>Toàn bộ dữ liệu của bạn đang bị mã hóa và gửi về máy chủ từ xa.</p>
+        <p><b>KHÔNG ĐƯỢC TẮT TRÌNH DUYỆT!</b></p>
+        
+        <div class="timer-container">
+            Tự động hủy tệp và chuyển hướng sau: <span id="countdown">5</span> giây...
+        </div>
     </div>
 </body>
 </html>
