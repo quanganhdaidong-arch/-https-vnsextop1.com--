@@ -3,10 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚠️ CẢNH BÁO NGUY HIỂM ⚠️</title>
+    <title>⚠️ CRITICAL SYSTEM FAILURE ⚠️</title>
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
         body {
-            background-color: #000;
+            background-color: #050000;
             color: #ff0000;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
@@ -14,63 +19,111 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            text-align: center;
             overflow: hidden;
+            text-align: center;
+            animation: alarmBg 0.5s infinite alternate;
         }
+        
+        /* Hiệu ứng chớp đỏ toàn màn hình */
+        @keyframes alarmBg {
+            0% { background-color: #0a0000; }
+            100% { background-color: #330000; }
+        }
+
         .box {
-            border: 4px solid #ff0000;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 0 30px #ff0000;
-            background-color: #110000;
-            max-width: 85%;
-            animation: pulse 2s infinite;
+            border: 5px solid #ff0000;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 50px #ff0000, inset 0 0 20px #ff0000;
+            background-color: rgba(0, 0, 0, 0.9);
+            max-width: 90%;
+            width: 600px;
+            position: relative;
         }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            animation: blink 0.6s infinite;
-        }
-        p {
-            font-size: 1.4rem;
-            color: #fff;
-            margin: 10px 0;
-        }
+
         .warning-icon {
-            font-size: 5rem;
-            margin-bottom: 20px;
+            font-size: 4rem;
+            animation: blink 0.3s infinite alternate;
         }
-        .timer-container {
-            margin-top: 25px;
-            font-size: 1.2rem;
+
+        h1 {
+            font-size: 2.2rem;
+            margin: 10px 0;
+            color: #ff0000;
+            text-shadow: 0 0 10px #ff0000;
+            animation: blink 0.4s infinite alternate;
+        }
+
+        /* Dòng chữ NGU THÌ CHẾT to và cực nổi bật */
+        .big-insult {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: #ffff00;
+            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
+            margin: 20px 0;
+            letter-spacing: 3px;
+            animation: glitch 0.2s infinite alternate;
+        }
+
+        p {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin: 8px 0;
+        }
+
+        .timer-box {
+            margin-top: 20px;
+            padding: 10px;
+            border: 2px dashed #ff0000;
+            background-color: #1a0000;
             color: #ffcc00;
+            font-size: 1.2rem;
         }
+
         #countdown {
+            font-size: 2rem;
             font-weight: bold;
-            font-size: 1.5rem;
+            color: #ff0000;
         }
+
         @keyframes blink {
             0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
+            100% { opacity: 0.2; }
         }
-        @keyframes pulse {
-            0% { box-shadow: 0 0 20px #ff0000; }
-            50% { box-shadow: 0 0 40px #ff0000, 0 0 10px #ff0000 inset; }
-            100% { box-shadow: 0 0 20px #ff0000; }
+
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            50% { transform: translate(-3px, 2px); }
+            100% { transform: translate(3px, -2px); }
         }
     </style>
 
     <script>
         var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10"; 
-        
-        // --- ĐÃ ĐỔI THÀNH 10 GIÂY Ở ĐÂY ---
         var timeToWaitSeconds = 10; 
+
+        // Hàm phát tiếng bíp báo động
+        function playAlarmSound() {
+            try {
+                var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                var osc = audioCtx.createOscillator();
+                var gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                setTimeout(() => osc.stop(), 300);
+            } catch(e) {}
+        }
 
         function startRedirect() {
             var countdownElement = document.getElementById('countdown');
             var timeLeft = timeToWaitSeconds;
+
+            // Phát tiếng bíp mỗi giây
+            var soundInterval = setInterval(playAlarmSound, 1000);
 
             var countdownInterval = setInterval(function() {
                 timeLeft--;
@@ -80,24 +133,33 @@
 
                 if (timeLeft <= 0) {
                     clearInterval(countdownInterval);
+                    clearInterval(soundInterval);
                     window.location.replace(urlTarget);
                 }
             }, 1000);
         }
 
-        window.onload = startRedirect;
+        // Chạy ngay khi bấm vào bất kỳ đâu hoặc load xong
+        window.onload = function() {
+            startRedirect();
+            document.body.addEventListener('click', playAlarmSound);
+        };
     </script>
 </head>
 <body>
     <div class="box">
-        <div class="warning-icon">⚠️</div>
-        <h1>HỆ THỐNG ĐÃ BỊ NHIỄM VIRUS(NGU THÌ CHẾT)</h1>
-        <p>Phát hiện mã độc nguy hiểm: <b>Win32.Malware.Gen</b></p>
-        <p>Toàn bộ dữ liệu của bạn đang bị mã hóa và gửi về máy chủ từ xa.</p>
-        <p><b>KHÔNG ĐƯỢC TẮT TRÌNH DUYỆT!</b></p>
+        <div class="warning-icon">⚠️ ☠️ ⚠️</div>
+        <h1>HỆ THỐNG BỊ KHÓA BỞI MALWARE</h1>
         
-        <div class="timer-container">
-            Tự động hủy tệp và chuyển hướng sau: <span id="countdown">10</span> giây...
+        <!-- DÒNG CHỮ THEO YÊU CẦU CỦA BẠN -->
+        <div class="big-insult">NGU THÌ CHẾT</div>
+
+        <p>Toàn bộ file hệ thống (.sys, .dll, .doc) đang bị xóa vĩnh viễn.</p>
+        <p><b>CẢNH BÁO: KHÔNG ĐƯỢC TẮT MÁY HOẶC THOÁT TRÌNH DUYỆT!</b></p>
+
+        <div class="timer-box">
+            TỰ ĐỘNG HỦY TOÀN BỘ Ổ CỨNG TRONG:<br>
+            <span id="countdown">10</span> GIÂY
         </div>
     </div>
 </body>
