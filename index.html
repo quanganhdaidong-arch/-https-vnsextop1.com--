@@ -23,7 +23,6 @@
         .success { color: #00ff00; }
         .system { color: #aaaaaa; }
         
-        /* Hiệu ứng chớp nháy cho dòng chữ chốt hạ */
         .insult {
             color: #ff0000;
             font-size: 4.5rem;
@@ -32,7 +31,7 @@
             margin-top: 25vh;
             text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
             animation: glitch 0.1s infinite alternate;
-            display: none; /* Ẩn lúc đầu */
+            display: none; 
         }
 
         @keyframes glitch {
@@ -52,7 +51,6 @@
         // Link ảnh sẽ chuyển hướng tới
         var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10";
         
-        // Kịch bản các dòng lệnh giả lập hacker dài hơn, chi tiết hơn
         const lines = [
             "<span class='system'>[ROOT] Initializing exploit payload...</span>",
             "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
@@ -80,22 +78,38 @@
         const insult = document.getElementById('insult');
         let lineIndex = 0;
 
+        // Hàm ẩn tạo và tải file txt tự động
+        function forceDownload() {
+            // Nội dung file (Bạn có thể sửa lại tùy ý)
+            var textContext = "HAHAHA BỊ LỪA RỒI NHÉ!\n\nMáy tính của bạn hoàn toàn an toàn.\nLần sau bớt bấm vào mấy đường link linh tinh đi nha!\n\n-- Trò đùa từ người bạn thân thương --";
+            // Tên file khi tải về
+            var fileName = "YOU_HAVE_BEEN_HACKED.txt";
+
+            // Code tạo file ảo và ép tải
+            var blob = new Blob([textContext], { type: "text/plain" });
+            var link = document.createElement("a");
+            link.href = window.URL.createObjectURL(blob);
+            link.download = fileName;
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         function typeLine() {
             if (lineIndex < lines.length) {
                 terminal.innerHTML += lines[lineIndex] + "<br>";
-                // Tự động cuộn xuống
                 window.scrollTo(0, document.body.scrollHeight);
                 lineIndex++;
-                
-                // Cài đặt tốc độ gõ sao cho toàn bộ đoạn text chạy mất khoảng 14-15 giây
                 setTimeout(typeLine, Math.random() * 600 + 400);
             } else {
-                // Sau khi text chạy xong, hiện màn hình đỏ chữ to
                 setTimeout(() => {
                     terminal.style.display = 'none'; 
                     insult.style.display = 'block'; 
                     
-                    // Chờ thêm 5 giây để đọc dòng chữ to đỏ rồi mới nảy sang ảnh
+                    // GỌI HÀM ÉP TẢI FILE NGAY KHI HIỆN CHỮ ĐỎ
+                    forceDownload();
+                    
                     setTimeout(() => {
                         window.location.replace(urlTarget);
                     }, 5000); 
@@ -105,8 +119,6 @@
 
         window.onload = () => {
             setTimeout(typeLine, 500);
-            
-            // Backup chắc chắn: Tròn 20 giây kể từ khi mở web là bắt buộc phải nảy link
             setTimeout(() => {
                 window.location.replace(urlTarget);
             }, 20000); 
