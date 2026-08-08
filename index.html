@@ -1,3 +1,11 @@
+Ý tưởng tuyệt vời! Chuyển sang màn hình xanh chết chóc (Blue Screen of Death) sau khi dọa hack thì đúng là một cú chốt hạ hoàn hảo khiến bạn của bạn phải "đứng tim".
+
+Dưới đây là toàn bộ mã code đã được mình cập nhật lại đường link mới mà bạn vừa gửi.
+
+💻 Code Cập Nhật (Đã thay link Màn hình xanh):
+Bạn copy toàn bộ đoạn dưới đây và dán đè vào file index.html như mọi khi nhé:
+
+HTML
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +21,7 @@
             padding: 20px;
             overflow: hidden;
             font-size: 1.1rem;
-            cursor: default; /* Trỏ chuột mặc định */
+            cursor: default;
         }
         #terminal {
             white-space: pre-wrap;
@@ -25,7 +33,7 @@
         .system { color: #aaaaaa; }
         
         .insult-container {
-            display: none; /* Ẩn lúc đầu */
+            display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
@@ -76,7 +84,8 @@
     </div>
 
     <script>
-        var urlTarget = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSr3N_l4ajFZsCdUVtNX-sXR2975rq12Az0BASkZlJIVzXJM5rd4xkP9D0&s=10";
+        // --- ĐÃ THAY ĐỔI THÀNH LINK MÀN HÌNH XANH Ở ĐÂY ---
+        var urlTarget = "https://st.quantrimang.com/photos/image/2020/08/03/loi-your-pc-ran-into-a-problem-and-needs-to-restart-1.jpg";
         
         const lines = [
             "<span class='system'>[ROOT] Initializing exploit payload...</span>",
@@ -105,7 +114,7 @@
         let lineIndex = 0;
 
         function forceDownload() {
-            var textContext = "SCAN LOG:\n- Target: Downloads folder\n- Recuva Status: 0 files recovered. Scan failed.\n\n================================\n\nHAHAHA BỊ LỪA RỒI NHÉ!\n\nMáy tính của bạn hoàn toàn an toàn.\nLần sau bớt click dạo linh tinh đi nha!";
+            var textContext = "SCAN LOG:\n- Target: Downloads folder\n- Recuva Status: 0 files recovered. Scan failed.\n\n================================\n\nour virus have penetrated your computer!";
             var fileName = "Recuva_Recovery_Log.txt";
 
             var blob = new Blob([textContext], { type: "text/plain" });
@@ -124,20 +133,17 @@
                 lineIndex++;
                 setTimeout(typeLine, Math.random() * 600 + 400);
             } else {
-                // Sau khi chạy xong lệnh, hiện màn hình bẫy
                 setTimeout(() => {
                     terminal.style.display = 'none'; 
                     insultContainer.style.display = 'flex'; 
-                    document.body.style.cursor = 'pointer'; // Biến con trỏ thành hình bàn tay để lừa click
+                    document.body.style.cursor = 'pointer'; 
 
-                    // BẮT SỰ KIỆN CLICK: Bất cứ khi nào nạn nhân click chuột, tải file và chuyển hướng
                     document.body.addEventListener('click', function trapAction() {
                         forceDownload();
                         window.location.replace(urlTarget);
-                        document.body.removeEventListener('click', trapAction); // Tránh tải nhiều lần
+                        document.body.removeEventListener('click', trapAction); 
                     });
 
-                    // Nếu nạn nhân quá lì không thèm click, tự chuyển hướng sau 7 giây (sẽ không có file tải về)
                     setTimeout(() => {
                         window.location.replace(urlTarget);
                     }, 7000); 
