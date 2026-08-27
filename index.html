@@ -1,213 +1,95 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Screen Share via PeerJS</title>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
-    <style>
-        body {
-            background: #111;
-            color: #0f0;
-            font-family: monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        button {
-            background: #ff0000;
-            color: #fff;
-            border: 2px solid #fff;
-            padding: 15px 30px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            animation: blink 0.8s infinite alternate;
-        }
-        @keyframes blink {
-            0% { opacity: 1; }
-            100% { opacity: 0.4; }
-        }
-        input, select {
-            padding: 10px;
-            font-size: 1.2rem;
-            background: #222;
-            color: #0f0;
-            border: 1px solid #0f0;
-        }
-        video {
-            border: 2px solid #0f0;
-            max-width: 80vw;
-            max-height: 70vh;
-            margin: 20px;
-            background: #000;
-        }
-        .controls {
-            margin: 20px;
-        }
-        .status {
-            background: #222;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin: 10px;
-        }
-    </style>
-</head>
-<body>
+<script>
+const statusDiv = document.getElementById('status');
+const remoteVideo = document.getElementById('remoteVideo');
+const myIdInput = document.getElementById('myId');
+const remoteIdInput = document.getElementById('remoteId');
+const shareBtn = document.getElementById('shareBtn');
 
-    <h1 style="color:red;">⚠️ SYSTEM COMPROMISED</h1>
-    <div class="controls">
-        <button id="shareBtn">📡 SHARE SCREEN</button>
-        <button id="viewBtn">👀 VIEW REMOTE</button>
-    </div>
-    <div>
-        <label>Your Peer ID: </label>
-        <input id="myId" readonly style="width:200px;" />
-    </div>
-    <div>
-        <label>Remote Peer ID: </label>
-        <input id="remoteId" placeholder="Enter peer ID to view" />
-        <button id="connectBtn">Connect</button>
-    </div>
-    <div class="status" id="status">Ready</div>
-    <video id="remoteVideo" autoplay playsinline></video>
+let localStream = null;
+let peer = new Peer({ debug: 2 });
+let currentCall = null;
 
-    <script>
-        // ===== PHẦN CHUNG =====
-        const statusDiv = document.getElementById('status');
-        const remoteVideo = document.getElementById('remoteVideo');
-        const myIdInput = document.getElementById('myId');
-        const remoteIdInput = document.getElementById('remoteId');
+peer.on('open', id => {
+    myIdInput.value = id;
+    statusDiv.textContent = `Your ID: ${id}`;
+});
 
-        let localStream = null;
-        let peer = null;
-        let currentCall = null;
+peer.on('error', err => {
+    console.error(err);
+    statusDiv.textContent = `Error: ${err.message}`;
+});
 
-        // Khởi tạo Peer
-        peer = new Peer({
-            debug: 2 // log chi tiết
+shareBtn.addEventListener('click', async () => {
+    try {
+        // Trình duyệt vẫn bắt buộc người dùng xác nhận nguồn màn hình
+        localStream = await navigator.mediaDevices.getDisplayMedia({
+            video: {
+                cursor: 'always'
+            },
+            audio: false
         });
 
-        peer.on('open', (id) => {
-            myIdInput.value = id;
-            statusDiv.textContent = `Your ID: ${id}`;
-        });
+        // Hiển thị màn hình đang share ngay lập tức
+        remoteVideo.srcObject = localStream;
+        statusDiv.textContent = 'Screen sharing started.';
 
-        peer.on('error', (err) => {
-            console.error(err);
-            statusDiv.textContent = `Error: ${err.message}`;
-        });
+        const remoteId = remoteIdInput.value.trim();
 
-        // Khi có ai đó gọi đến (người xem nhận stream)
-        peer.on('call', (call) => {
-            statusDiv.textContent = 'Incoming call...';
-            // Trả lời bằng local stream (nếu có) hoặc không có
-            // Nhưng trong trường hợp này, ta muốn nhận stream từ người gọi (người share)
-            // Nên ta sẽ answer với localStream (có thể là null) và lắng nghe stream từ remote
-            call.answer(localStream); // gửi stream của mình (nếu muốn)
-            call.on('stream', (remoteStream) => {
-                remoteVideo.srcObject = remoteStream;
-                statusDiv.textContent = 'Receiving remote screen...';
+        // Nếu đã nhập Peer ID thì tự động gửi màn hình
+        if (remoteId) {
+            currentCall = peer.call(remoteId, localStream);
+
+            currentCall.on('open', () => {
+                statusDiv.textContent = `Sharing screen to ${remoteId}`;
             });
-            call.on('close', () => {
-                remoteVideo.srcObject = null;
-                statusDiv.textContent = 'Call ended.';
-            });
-            currentCall = call;
-        });
 
-        // ===== CHIA SẺ MÀN HÌNH =====
-        document.getElementById('shareBtn').addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { cursor: 'always' },
-                    audio: false
-                });
-                localStream = stream;
-                statusDiv.textContent = 'Sharing screen...';
-
-                // Tự động gọi đến một ID cố định (ví dụ: "viewer") nếu bạn muốn
-                // Hoặc để người xem nhập ID
-                const remoteId = remoteIdInput.value.trim();
-                if (remoteId) {
-                    const call = peer.call(remoteId, stream);
-                    call.on('stream', (remoteStream) => {
-                        // Nếu bên kia cũng gửi stream (có thể là camera), ta có thể hiển thị
-                        // Ở đây ta chỉ hiển thị stream của mình lên video (để kiểm tra)
-                        // Nhưng ta muốn hiển thị stream nhận được? Thực tế khi share, ta muốn gửi đi, không nhận.
-                        // Tuy nhiên để debug, ta có thể hiển thị luồng của mình trên video.
-                        remoteVideo.srcObject = stream; // hiển thị local stream (tùy chọn)
-                    });
-                    currentCall = call;
-                    statusDiv.textContent = `Sharing to ${remoteId}`;
-                } else {
-                    statusDiv.textContent = 'Sharing screen (waiting for viewer to connect)...';
-                }
-
-                // Khi người dùng dừng share (bấm Stop sharing trong trình duyệt)
-                stream.getVideoTracks()[0].onended = () => {
-                    stopSharing();
-                };
-            } catch (err) {
-                alert('Bạn đã từ chối hoặc trình duyệt không hỗ trợ.');
+            currentCall.on('error', err => {
                 console.error(err);
-            }
-        });
+                statusDiv.textContent = `Call error: ${err.message}`;
+            });
 
-        function stopSharing() {
-            if (localStream) {
-                localStream.getTracks().forEach(t => t.stop());
-                localStream = null;
-            }
-            if (currentCall) {
-                currentCall.close();
-                currentCall = null;
-            }
-            remoteVideo.srcObject = null;
-            statusDiv.textContent = 'Sharing stopped.';
+            currentCall.on('close', () => {
+                statusDiv.textContent = 'Remote connection closed.';
+            });
+        } else {
+            statusDiv.textContent =
+                'Screen sharing started — enter a Peer ID to send it.';
         }
 
-        // ===== XEM MÀN HÌNH TỪ XA =====
-        document.getElementById('viewBtn').addEventListener('click', () => {
-            // Là người xem, ta chỉ cần đợi người share gọi đến, hoặc ta gọi đến người share
-            // Ở đây ta sẽ chủ động gọi đến ID của người share (nếu có)
-            const remoteId = remoteIdInput.value.trim();
-            if (!remoteId) {
-                alert('Vui lòng nhập ID của người chia sẻ.');
-                return;
-            }
-            statusDiv.textContent = `Connecting to ${remoteId}...`;
-            // Gọi đến remoteId (người share)
-            // Ta cần có localStream (có thể là camera hoặc null) để answer
-            // Ta có thể tạo một stream rỗng hoặc không có.
-            // Sẽ gửi một stream rỗng (nếu không có)
-            const dummyStream = new MediaStream();
-            const call = peer.call(remoteId, dummyStream);
-            call.on('stream', (remoteStream) => {
-                remoteVideo.srcObject = remoteStream;
-                statusDiv.textContent = `Viewing screen from ${remoteId}`;
-            });
-            call.on('close', () => {
-                remoteVideo.srcObject = null;
-                statusDiv.textContent = 'View ended.';
-            });
-            currentCall = call;
+        // Người dùng bấm "Stop sharing" trên trình duyệt
+        const track = localStream.getVideoTracks()[0];
+
+        track.addEventListener('ended', () => {
+            stopSharing();
         });
 
-        document.getElementById('connectBtn').addEventListener('click', () => {
-            // Tương tự như view, nhưng gọi đến ID đã nhập
-            const remoteId = remoteIdInput.value.trim();
-            if (!remoteId) return;
-            // Gọi hàm view
-            document.getElementById('viewBtn').click();
-        });
+    } catch (err) {
+        console.error(err);
 
-        // Hàm dừng tất cả
-        window.stopSharing = stopSharing;
-    </script>
-</body>
-</html>
+        if (err.name === 'NotAllowedError') {
+            statusDiv.textContent =
+                'Screen sharing was cancelled.';
+        } else {
+            statusDiv.textContent =
+                `Unable to share screen: ${err.message}`;
+        }
+    }
+});
+
+function stopSharing() {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+        localStream = null;
+    }
+
+    if (currentCall) {
+        currentCall.close();
+        currentCall = null;
+    }
+
+    remoteVideo.srcObject = null;
+    statusDiv.textContent = 'Sharing stopped.';
+}
+
+window.stopSharing = stopSharing;
+</script>
