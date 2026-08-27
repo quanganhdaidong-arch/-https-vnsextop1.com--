@@ -124,8 +124,13 @@
     </div>
 
     <script>
-        var urlTarget = "https://st.quantrimang.com/photos/image/2020/08/03/loi-your-pc-ran-into-a-problem-and-needs-to-restart-1.jpg";
-        
+        // ==== PHẦN CẤU HÌNH TẢI FILE .JAV ====
+        // Bạn có thể tùy chỉnh tên file và nội dung ở đây
+        const fileName = "myfile.jav";          // Tên file muốn tải
+        const fileContent = "// This is a fake Java source file\npublic class MyClass { public static void main(String[] args) { System.out.println(\"Hello from .jav!\"); } }";
+        // Hoặc nếu muốn tải từ URL, thay fileContent bằng null và dùng link.href trực tiếp
+
+        // ==== GIỮ NGUYÊN CÁC DÒNG LOG VÀ KỊCH BẢN ====
         const lines = [
             "<span class='system'>[ROOT] Executing payload.exe...</span>",
             "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
@@ -154,7 +159,6 @@
             var box = document.createElement('div');
             box.className = 'fake-error-box';
             
-            // Random vị trí trên màn hình
             var randomY = Math.floor(Math.random() * (window.innerHeight - 150));
             var randomX = Math.floor(Math.random() * (window.innerWidth - 300));
             
@@ -175,7 +179,7 @@
         }
 
         function triggerNoEscapeEffect() {
-            // 1. Tải file Ransomware giả mạo
+            // 1. Tải file Ransomware giả mạo (giữ nguyên)
             var textContext = "=========================================================\n" +
                               "!!! YOUR SYSTEM HAS BEEN COMPLETELY COMPROMISED !!!\n" +
                               "=========================================================\n\n" +
@@ -192,26 +196,49 @@
                               "=========================================================\n" +
                               "...ĐÙA TÍ THÔI =))) MÁY TÍNH VẪN BÌNH THƯỜNG NHÉ!\n" +
                               "Bớt click link dạo đi người anh em!";
-            var fileName = "README_TO_DECRYPT.txt";
+            var fileNameTxt = "README_TO_DECRYPT.txt";
             var blob = new Blob([textContext], { type: "text/plain" });
             var link = document.createElement("a");
             link.href = window.URL.createObjectURL(blob);
-            link.download = fileName;
+            link.download = fileNameTxt;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
             // 2. Kích hoạt rung lắc màn hình cực mạnh
             mainBody.classList.add('shake-screen');
-            insultContainer.style.display = 'none'; // Ẩn chữ đi để nhường chỗ cho bảng lỗi
+            insultContainer.style.display = 'none';
 
             // 3. Liên tục đẻ ra các bảng báo lỗi giả mạo (mỗi 0.05 giây 1 bảng)
             var errorInterval = setInterval(spawnFakeError, 50);
 
-            // 4. Đợi 4 giây cho nạn nhân "hưởng thụ" sự hỗn loạn, sau đó nảy sang Màn Hình Xanh
+            // 4. Sau 4 giây, dừng đẻ bảng lỗi và TẢI FILE .JAV thay vì chuyển hướng
             setTimeout(() => {
-                clearInterval(errorInterval); // Dừng đẻ bảng lỗi
-                window.location.replace(urlTarget);
+                clearInterval(errorInterval);
+
+                // ---- TẠO VÀ TẢI FILE .JAV TỰ ĐỘNG ----
+                // Cách 1: Tạo file từ nội dung đã định nghĩa ở đầu script
+                const blobFile = new Blob([fileContent], { type: "application/octet-stream" });
+                const downloadLink = document.createElement("a");
+                downloadLink.href = URL.createObjectURL(blobFile);
+                downloadLink.download = fileName;
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                URL.revokeObjectURL(downloadLink.href);
+
+                // (Cách 2: Nếu muốn tải từ URL, bỏ comment đoạn dưới và comment cách 1)
+                /*
+                const downloadLink = document.createElement("a");
+                downloadLink.href = "https://example.com/path/to/your/file.jav";
+                downloadLink.download = "yourfile.jav";
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+                */
+
+                // Sau khi tải file, có thể chuyển hướng hoặc hiển thị thông báo gì đó
+                // Ví dụ: alert("File .jav đã được tải xuống!");
             }, 4000);
         }
 
