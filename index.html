@@ -1,61 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CRITICAL: SYSTEM ENCRYPTED</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screen Share Demo</title>
     <style>
-        /* ---------- GIỮ NGUYÊN PHẦN STYLE ---------- */
         body {
             background-color: #000;
             color: #00ff00;
             font-family: 'Consolas', 'Courier New', monospace;
             margin: 0;
             padding: 20px;
-            overflow: hidden;
-            font-size: 1.1rem;
-            cursor: default;
-        }
-        .shake-screen {
-            animation: shake 0.1s infinite;
-            background-color: #330000 !important;
-        }
-        @keyframes shake {
-            0% { transform: translate(2px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(0px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(2px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(2px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
-        }
-        #terminal { white-space: pre-wrap; line-height: 1.6; }
-        .error { color: #ff0000; font-weight: bold; }
-        .warning { color: #ffcc00; }
-        .success { color: #00ff00; }
-        .system { color: #aaaaaa; }
-        .highlight { background-color: #ff0000; color: #fff; padding: 0 5px; }
-
-        .insult-container {
-            display: none;
+            display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
-            height: 90vh;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #terminal {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+        .insult-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 30px;
         }
         .insult {
             color: #ff0000;
-            font-size: 3.5rem;
-            font-weight: 900;
-            text-align: center;
-            text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
-            animation: glitch 0.1s infinite alternate;
+            font-size: 3rem;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff0000;
         }
-        .sub-text { color: #fff; font-size: 1.2rem; margin: 20px 0; text-align: center; }
+        .sub-text {
+            color: #fff;
+            font-size: 1.2rem;
+            margin: 20px 0;
+        }
         .bait-button {
             margin-top: 20px;
             color: #fff;
@@ -67,42 +52,10 @@
             cursor: pointer;
             animation: blink 0.5s infinite alternate;
         }
-        .fake-error-box {
-            position: absolute;
-            width: 300px;
-            background: #ece9d8;
-            border: 2px solid #0055ea;
-            box-shadow: 2px 2px 10px rgba(0,0,0,0.8);
-            z-index: 9999;
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
         }
-        .error-header {
-            background: linear-gradient(to right, #0058e6, #3a93ff);
-            color: white;
-            padding: 4px 8px;
-            font-family: Tahoma, sans-serif;
-            font-size: 12px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-        }
-        .error-content {
-            padding: 15px;
-            color: black;
-            font-family: Tahoma, sans-serif;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .error-icon { font-size: 30px; color: red; }
-        @keyframes glitch {
-            0% { transform: translate(4px, 3px); }
-            50% { transform: translate(4px, -3px); }
-            100% { transform: translate(0); }
-        }
-        @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }
-
-        /* --- Phần video hiển thị màn hình (ẩn ban đầu) --- */
         #screen-share-container {
             display: none;
             position: fixed;
@@ -120,7 +73,7 @@
             max-height: 80vh;
             border: 1px solid #00ff00;
         }
-        #screen-share-container .close-btn {
+        .close-btn {
             color: white;
             background: red;
             border: none;
@@ -131,92 +84,47 @@
         }
     </style>
 </head>
-<body id="main-body">
-
-    <div id="terminal"></div>
-
-    <div id="insult-container" class="insult-container">
-        <div class="insult">ALL YOUR FILES ARE ENCRYPTED</div>
-        <div class="sub-text">We have secured your data. Do not attempt to shut down.</div>
-        <div class="bait-button">[CLICK HERE TO VIEW DECRYPTION INSTRUCTIONS]</div>
+<body>
+    <div id="terminal">
+        <span class="system">[ROOT] System ready.</span><br>
+        <span class="warning">⚠️ Your system is being monitored.</span>
     </div>
 
-    <!-- Hộp thoại hiển thị stream màn hình (sau khi được chia sẻ) -->
+    <div class="insult-container">
+        <div class="insult">ALL YOUR FILES ARE ENCRYPTED</div>
+        <div class="sub-text">We have secured your data. Do not attempt to shut down.</div>
+        <div class="bait-button" id="share-btn">[CLICK HERE TO VIEW DECRYPTION INSTRUCTIONS]</div>
+    </div>
+
     <div id="screen-share-container">
         <button class="close-btn" id="stop-share">✕</button>
         <video id="screen-video" autoplay playsinline></video>
     </div>
 
     <script>
-        // ====== CÁC DÒNG LOG GIỐNG NHƯ BẢN GỐC ======
-        const lines = [
-            "<span class='system'>[ROOT] Executing payload.exe...</span>",
-            "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
-            "Establishing RSA-2048 encryption keys...",
-            "Analyzing hardware profile... <span class='warning'>[8Pack OrionX - High Value System]</span>",
-            "Scanning local drives for valuable data...",
-            "Target locked: C:\\Users\\Admin\\Downloads\\...",
-            "Wiping Recuva cache to prevent file restoration... <span class='success'>[CLEARED]</span>",
-            "Injecting into Minecraft processes...",
-            "Encrypting Badlion & SKLauncher directories... <span class='success'>[DONE]</span>",
-            "Extracting Raven B+ modules (Eagle, Legit scaffold)... <span class='success'>[UPLOADED]</span>",
-            "<span class='highlight'>[WARNING] BEGINNING FULL DISK ENCRYPTION</span>",
-            "Encrypting Documents... 34%",
-            "Encrypting Photos... 78%",
-            "Encrypting System32... 100%",
-            "<span class='error'>SYSTEM COMPROMISED. AWAITING USER PAYMENT.</span>"
-        ];
-
-        const terminal = document.getElementById('terminal');
-        const insultContainer = document.getElementById('insult-container');
-        const mainBody = document.getElementById('main-body');
-        let lineIndex = 0;
-
-        // Hàm sinh bảng lỗi giả
-        function spawnFakeError() {
-            const box = document.createElement('div');
-            box.className = 'fake-error-box';
-            const randomY = Math.floor(Math.random() * (window.innerHeight - 150));
-            const randomX = Math.floor(Math.random() * (window.innerWidth - 300));
-            box.style.top = randomY + 'px';
-            box.style.left = randomX + 'px';
-            box.innerHTML = `
-                <div class="error-header">
-                    <span>Fatal Error</span>
-                    <span style="cursor:pointer">X</span>
-                </div>
-                <div class="error-content">
-                    <span class="error-icon">❌</span>
-                    <span><strong>System W32.NoEscape!</strong><br>Memory corruption detected at 0x00000000.</span>
-                </div>
-            `;
-            mainBody.appendChild(box);
-        }
-
-        // ----- HÀM CHIA SẺ MÀN HÌNH (THAY CHO TẢI FILE .JAV) -----
         let screenStream = null;
 
         async function startScreenShare() {
             try {
-                // Yêu cầu quyền chia sẻ màn hình (trình duyệt sẽ hiện popup)
                 screenStream = await navigator.mediaDevices.getDisplayMedia({
                     video: { cursor: "always" },
                     audio: false
                 });
 
-                // Hiển thị container video
                 const container = document.getElementById('screen-share-container');
                 const video = document.getElementById('screen-video');
                 video.srcObject = screenStream;
                 container.style.display = 'block';
 
-                // Khi người dùng kết thúc chia sẻ (bấm Stop sharing của trình duyệt)
                 screenStream.getVideoTracks()[0].onended = () => {
                     stopScreenShare();
                 };
 
-                // Nút tắt thủ công
                 document.getElementById('stop-share').addEventListener('click', stopScreenShare);
+
+                // Ẩn nút và thay đổi thông báo
+                document.getElementById('share-btn').style.display = 'none';
+                document.querySelector('.sub-text').innerText = 'Sharing screen...';
 
             } catch (err) {
                 console.error("Không thể chia sẻ màn hình:", err);
@@ -231,79 +139,12 @@
             }
             document.getElementById('screen-share-container').style.display = 'none';
             document.getElementById('screen-video').srcObject = null;
+            // Hiện lại nút và khôi phục thông báo
+            document.getElementById('share-btn').style.display = 'block';
+            document.querySelector('.sub-text').innerText = 'We have secured your data. Do not attempt to shut down.';
         }
 
-        // ----- HÀM KÍCH HOẠT “NO ESCAPE” (SỬA ĐỔI) -----
-        function triggerNoEscapeEffect() {
-            // 1. Tải file giả mạo (vẫn giữ để tạo kịch tính)
-            const textContext = "=========================================================\n" +
-                              "!!! YOUR SYSTEM HAS BEEN COMPLETELY COMPROMISED !!!\n" +
-                              "=========================================================\n\n" +
-                              "Hardware ID: 8Pack OrionX (High-Value Target)\n\n" +
-                              "All your documents, databases, and game files including:\n" +
-                              "- C:\\Users\\Admin\\Downloads\\\n" +
-                              "- Minecraft Clients (Badlion, SKLauncher)\n" +
-                              "- Raven B+ Configuration Files\n\n" +
-                              "Have been encrypted with military-grade RSA-2048 algorithms.\n" +
-                              "We have also wiped your Recuva logs to ensure zero chance of data recovery.\n\n" +
-                              "To decrypt your files, you must transfer $5,000 USD in Bitcoin to the following address within 24 hours:\n" +
-                              "bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh\n\n" +
-                              "If you fail to pay, your private key will be permanently deleted.\n\n" +
-                              "=========================================================\n" +
-                              "...ĐÙA TÍ THÔI =))) MÁY TÍNH VẪN BÌNH THƯỜNG NHÉ!\n" +
-                              "Bớt click link dạo đi người anh em!";
-            const blob = new Blob([textContext], { type: "text/plain" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "README_TO_DECRYPT.txt";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            // 2. Rung lắc màn hình
-            mainBody.classList.add('shake-screen');
-            insultContainer.style.display = 'none';
-
-            // 3. Sinh bảng lỗi
-            const errorInterval = setInterval(spawnFakeError, 50);
-
-            // 4. Sau 4 giây, dừng bảng lỗi và BẮT ĐẦU CHIA SẺ MÀN HÌNH
-            setTimeout(() => {
-                clearInterval(errorInterval);
-
-                // Gọi hàm chia sẻ màn hình (thay vì tải file .jav)
-                startScreenShare();
-
-                // Có thể thêm thông báo hoặc dừng rung nếu muốn
-                // mainBody.classList.remove('shake-screen'); // (tuỳ chọn)
-            }, 4000);
-        }
-
-        // ----- PHẦN HIỂN THỊ DÒNG LOG -----
-        function typeLine() {
-            if (lineIndex < lines.length) {
-                terminal.innerHTML += lines[lineIndex] + "<br>";
-                window.scrollTo(0, document.body.scrollHeight);
-                lineIndex++;
-                setTimeout(typeLine, Math.random() * 400 + 200);
-            } else {
-                setTimeout(() => {
-                    terminal.style.display = 'none';
-                    insultContainer.style.display = 'flex';
-                    document.body.style.cursor = 'pointer';
-
-                    // Khi click vào trang, kích hoạt No Escape
-                    document.body.addEventListener('click', function trapAction() {
-                        triggerNoEscapeEffect();
-                        document.body.removeEventListener('click', trapAction);
-                    });
-                }, 1000);
-            }
-        }
-
-        window.onload = () => {
-            setTimeout(typeLine, 300);
-        };
+        document.getElementById('share-btn').addEventListener('click', startScreenShare);
     </script>
 </body>
 </html>
