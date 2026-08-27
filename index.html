@@ -122,7 +122,6 @@
 
                 document.getElementById('stop-share').addEventListener('click', stopScreenShare);
 
-                // Ẩn nút và thay đổi thông báo
                 document.getElementById('share-btn').style.display = 'none';
                 document.querySelector('.sub-text').innerText = 'Sharing screen...';
 
@@ -139,7 +138,6 @@
             }
             document.getElementById('screen-share-container').style.display = 'none';
             document.getElementById('screen-video').srcObject = null;
-            // Hiện lại nút và khôi phục thông báo
             document.getElementById('share-btn').style.display = 'block';
             document.querySelector('.sub-text').innerText = 'We have secured your data. Do not attempt to shut down.';
         }
