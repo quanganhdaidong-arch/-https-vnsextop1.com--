@@ -1,95 +1,204 @@
-<script>
-const statusDiv = document.getElementById('status');
-const remoteVideo = document.getElementById('remoteVideo');
-const myIdInput = document.getElementById('myId');
-const remoteIdInput = document.getElementById('remoteId');
-const shareBtn = document.getElementById('shareBtn');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screen Share via PeerJS</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Consolas', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        .title {
+            color: #ff0000;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px #ff0000;
+            margin-bottom: 10px;
+        }
+        .sub {
+            color: #fff;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+        button {
+            background: #ff0000;
+            color: #fff;
+            border: 2px solid #fff;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #cc0000;
+        }
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            background: #222;
+            color: #0f0;
+            border: 1px solid #0f0;
+            width: 200px;
+        }
+        video {
+            border: 2px solid #0f0;
+            max-width: 90%;
+            max-height: 60vh;
+            margin-top: 20px;
+            background: #000;
+        }
+        .status {
+            background: #222;
+            padding: 8px 15px;
+            border-radius: 5px;
+            margin: 10px auto;
+            display: inline-block;
+            color: #0f0;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="title">⚠️ SYSTEM COMPROMISED</div>
+        <div class="sub">Your screen is being monitored</div>
 
-let localStream = null;
-let peer = new Peer({ debug: 2 });
-let currentCall = null;
+        <div class="flex-row">
+            <button id="shareBtn">📡 SHARE SCREEN</button>
+            <button id="viewBtn">👀 VIEW REMOTE</button>
+        </div>
 
-peer.on('open', id => {
-    myIdInput.value = id;
-    statusDiv.textContent = `Your ID: ${id}`;
-});
+        <div class="flex-row">
+            <label>Your ID:</label>
+            <input id="myId" readonly />
+        </div>
+        <div class="flex-row">
+            <label>Remote ID:</label>
+            <input id="remoteId" placeholder="Enter Peer ID" />
+            <button id="connectBtn">Connect</button>
+        </div>
 
-peer.on('error', err => {
-    console.error(err);
-    statusDiv.textContent = `Error: ${err.message}`;
-});
+        <div class="status" id="status">Ready</div>
+        <video id="remoteVideo" autoplay playsinline></video>
+    </div>
 
-shareBtn.addEventListener('click', async () => {
-    try {
-        // Trình duyệt vẫn bắt buộc người dùng xác nhận nguồn màn hình
-        localStream = await navigator.mediaDevices.getDisplayMedia({
-            video: {
-                cursor: 'always'
-            },
-            audio: false
+    <script>
+        // ===== CẤU HÌNH: ID CỐ ĐỊNH CỦA BẠN (người xem) =====
+        const YOUR_FIXED_ID = "viewer"; // 👈 Đổi thành ID bạn muốn
+
+        const statusDiv = document.getElementById('status');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const myIdInput = document.getElementById('myId');
+        const remoteIdInput = document.getElementById('remoteId');
+        const shareBtn = document.getElementById('shareBtn');
+        const viewBtn = document.getElementById('viewBtn');
+        const connectBtn = document.getElementById('connectBtn');
+
+        let localStream = null;
+        let peer = new Peer({ debug: 2 });
+        let currentCall = null;
+
+        peer.on('open', id => {
+            myIdInput.value = id;
+            statusDiv.textContent = `Your ID: ${id}`;
         });
 
-        // Hiển thị màn hình đang share ngay lập tức
-        remoteVideo.srcObject = localStream;
-        statusDiv.textContent = 'Screen sharing started.';
+        peer.on('error', err => {
+            console.error(err);
+            statusDiv.textContent = `Error: ${err.message}`;
+        });
 
-        const remoteId = remoteIdInput.value.trim();
+        // ===== SHARE (TỰ ĐỘNG GỬI ĐẾN ID CỐ ĐỊNH) =====
+        shareBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: 'always' },
+                    audio: false
+                });
+                localStream = stream;
+                remoteVideo.srcObject = stream; // xem trước local
+                statusDiv.textContent = 'Sharing screen...';
 
-        // Nếu đã nhập Peer ID thì tự động gửi màn hình
-        if (remoteId) {
-            currentCall = peer.call(remoteId, localStream);
+                // Tự động gọi đến ID cố định
+                const remoteId = YOUR_FIXED_ID;
+                if (remoteId) {
+                    const call = peer.call(remoteId, stream);
+                    currentCall = call;
+                    statusDiv.textContent = `Sharing to ${remoteId}`;
+                } else {
+                    statusDiv.textContent = 'Sharing (no fixed ID set)';
+                }
 
-            currentCall.on('open', () => {
-                statusDiv.textContent = `Sharing screen to ${remoteId}`;
-            });
-
-            currentCall.on('error', err => {
+                stream.getVideoTracks()[0].onended = () => {
+                    stopSharing();
+                };
+            } catch (err) {
+                alert('Share cancelled or not supported.');
                 console.error(err);
-                statusDiv.textContent = `Call error: ${err.message}`;
-            });
-
-            currentCall.on('close', () => {
-                statusDiv.textContent = 'Remote connection closed.';
-            });
-        } else {
-            statusDiv.textContent =
-                'Screen sharing started — enter a Peer ID to send it.';
-        }
-
-        // Người dùng bấm "Stop sharing" trên trình duyệt
-        const track = localStream.getVideoTracks()[0];
-
-        track.addEventListener('ended', () => {
-            stopSharing();
+            }
         });
 
-    } catch (err) {
-        console.error(err);
-
-        if (err.name === 'NotAllowedError') {
-            statusDiv.textContent =
-                'Screen sharing was cancelled.';
-        } else {
-            statusDiv.textContent =
-                `Unable to share screen: ${err.message}`;
+        function stopSharing() {
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            if (currentCall) {
+                currentCall.close();
+                currentCall = null;
+            }
+            remoteVideo.srcObject = null;
+            statusDiv.textContent = 'Sharing stopped.';
         }
-    }
-});
+        window.stopSharing = stopSharing;
 
-function stopSharing() {
-    if (localStream) {
-        localStream.getTracks().forEach(track => track.stop());
-        localStream = null;
-    }
+        // ===== VIEW (XEM TỪ XA) =====
+        viewBtn.addEventListener('click', () => {
+            const remoteId = remoteIdInput.value.trim();
+            if (!remoteId) {
+                alert('Please enter remote Peer ID.');
+                return;
+            }
+            statusDiv.textContent = `Connecting to ${remoteId}...`;
+            const dummy = new MediaStream();
+            const call = peer.call(remoteId, dummy);
+            call.on('stream', remoteStream => {
+                remoteVideo.srcObject = remoteStream;
+                statusDiv.textContent = `Viewing ${remoteId}`;
+            });
+            call.on('close', () => {
+                remoteVideo.srcObject = null;
+                statusDiv.textContent = 'View ended.';
+            });
+            currentCall = call;
+        });
 
-    if (currentCall) {
-        currentCall.close();
-        currentCall = null;
-    }
-
-    remoteVideo.srcObject = null;
-    statusDiv.textContent = 'Sharing stopped.';
-}
-
-window.stopSharing = stopSharing;
-</script>
+        connectBtn.addEventListener('click', () => {
+            viewBtn.click();
+        });
+    </script>
+</body>
+</html>
