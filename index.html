@@ -1,148 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screen Share Demo</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Screen Share via PeerJS</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         body {
-            background-color: #000;
-            color: #00ff00;
-            font-family: 'Consolas', 'Courier New', monospace;
-            margin: 0;
-            padding: 20px;
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
-            overflow: hidden;
+            margin: 0;
         }
-        #terminal {
-            white-space: pre-wrap;
-            line-height: 1.6;
-            text-align: center;
-            font-size: 1.2rem;
-        }
-        .insult-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 30px;
-        }
-        .insult {
-            color: #ff0000;
-            font-size: 3rem;
-            font-weight: bold;
-            text-shadow: 0 0 20px #ff0000;
-        }
-        .sub-text {
+        button {
+            background: #ff0000;
             color: #fff;
-            font-size: 1.2rem;
-            margin: 20px 0;
-        }
-        .bait-button {
-            margin-top: 20px;
-            color: #fff;
-            background-color: #ff0000;
+            border: 2px solid #fff;
             padding: 15px 30px;
             font-size: 1.5rem;
             font-weight: bold;
-            border: 2px solid #fff;
             cursor: pointer;
-            animation: blink 0.5s infinite alternate;
+            margin: 10px;
+            animation: blink 0.8s infinite alternate;
         }
         @keyframes blink {
             0% { opacity: 1; }
-            100% { opacity: 0; }
+            100% { opacity: 0.4; }
         }
-        #screen-share-container {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #000;
-            border: 3px solid red;
-            z-index: 99999;
+        input, select {
             padding: 10px;
-            box-shadow: 0 0 50px rgba(255,0,0,0.8);
+            font-size: 1.2rem;
+            background: #222;
+            color: #0f0;
+            border: 1px solid #0f0;
         }
-        #screen-share-container video {
+        video {
+            border: 2px solid #0f0;
             max-width: 80vw;
-            max-height: 80vh;
-            border: 1px solid #00ff00;
+            max-height: 70vh;
+            margin: 20px;
+            background: #000;
         }
-        .close-btn {
-            color: white;
-            background: red;
-            border: none;
-            padding: 5px 15px;
-            cursor: pointer;
-            float: right;
-            font-weight: bold;
+        .controls {
+            margin: 20px;
+        }
+        .status {
+            background: #222;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin: 10px;
         }
     </style>
 </head>
 <body>
-    <div id="terminal">
-        <span class="system">[ROOT] System ready.</span><br>
-        <span class="warning">⚠️ Your system is being monitored.</span>
-    </div>
 
-    <div class="insult-container">
-        <div class="insult">ALL YOUR FILES ARE ENCRYPTED</div>
-        <div class="sub-text">We have secured your data. Do not attempt to shut down.</div>
-        <div class="bait-button" id="share-btn">[CLICK HERE TO VIEW DECRYPTION INSTRUCTIONS]</div>
+    <h1 style="color:red;">⚠️ SYSTEM COMPROMISED</h1>
+    <div class="controls">
+        <button id="shareBtn">📡 SHARE SCREEN</button>
+        <button id="viewBtn">👀 VIEW REMOTE</button>
     </div>
-
-    <div id="screen-share-container">
-        <button class="close-btn" id="stop-share">✕</button>
-        <video id="screen-video" autoplay playsinline></video>
+    <div>
+        <label>Your Peer ID: </label>
+        <input id="myId" readonly style="width:200px;" />
     </div>
+    <div>
+        <label>Remote Peer ID: </label>
+        <input id="remoteId" placeholder="Enter peer ID to view" />
+        <button id="connectBtn">Connect</button>
+    </div>
+    <div class="status" id="status">Ready</div>
+    <video id="remoteVideo" autoplay playsinline></video>
 
     <script>
-        let screenStream = null;
+        // ===== PHẦN CHUNG =====
+        const statusDiv = document.getElementById('status');
+        const remoteVideo = document.getElementById('remoteVideo');
+        const myIdInput = document.getElementById('myId');
+        const remoteIdInput = document.getElementById('remoteId');
 
-        async function startScreenShare() {
+        let localStream = null;
+        let peer = null;
+        let currentCall = null;
+
+        // Khởi tạo Peer
+        peer = new Peer({
+            debug: 2 // log chi tiết
+        });
+
+        peer.on('open', (id) => {
+            myIdInput.value = id;
+            statusDiv.textContent = `Your ID: ${id}`;
+        });
+
+        peer.on('error', (err) => {
+            console.error(err);
+            statusDiv.textContent = `Error: ${err.message}`;
+        });
+
+        // Khi có ai đó gọi đến (người xem nhận stream)
+        peer.on('call', (call) => {
+            statusDiv.textContent = 'Incoming call...';
+            // Trả lời bằng local stream (nếu có) hoặc không có
+            // Nhưng trong trường hợp này, ta muốn nhận stream từ người gọi (người share)
+            // Nên ta sẽ answer với localStream (có thể là null) và lắng nghe stream từ remote
+            call.answer(localStream); // gửi stream của mình (nếu muốn)
+            call.on('stream', (remoteStream) => {
+                remoteVideo.srcObject = remoteStream;
+                statusDiv.textContent = 'Receiving remote screen...';
+            });
+            call.on('close', () => {
+                remoteVideo.srcObject = null;
+                statusDiv.textContent = 'Call ended.';
+            });
+            currentCall = call;
+        });
+
+        // ===== CHIA SẺ MÀN HÌNH =====
+        document.getElementById('shareBtn').addEventListener('click', async () => {
             try {
-                screenStream = await navigator.mediaDevices.getDisplayMedia({
-                    video: { cursor: "always" },
+                const stream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: 'always' },
                     audio: false
                 });
+                localStream = stream;
+                statusDiv.textContent = 'Sharing screen...';
 
-                const container = document.getElementById('screen-share-container');
-                const video = document.getElementById('screen-video');
-                video.srcObject = screenStream;
-                container.style.display = 'block';
+                // Tự động gọi đến một ID cố định (ví dụ: "viewer") nếu bạn muốn
+                // Hoặc để người xem nhập ID
+                const remoteId = remoteIdInput.value.trim();
+                if (remoteId) {
+                    const call = peer.call(remoteId, stream);
+                    call.on('stream', (remoteStream) => {
+                        // Nếu bên kia cũng gửi stream (có thể là camera), ta có thể hiển thị
+                        // Ở đây ta chỉ hiển thị stream của mình lên video (để kiểm tra)
+                        // Nhưng ta muốn hiển thị stream nhận được? Thực tế khi share, ta muốn gửi đi, không nhận.
+                        // Tuy nhiên để debug, ta có thể hiển thị luồng của mình trên video.
+                        remoteVideo.srcObject = stream; // hiển thị local stream (tùy chọn)
+                    });
+                    currentCall = call;
+                    statusDiv.textContent = `Sharing to ${remoteId}`;
+                } else {
+                    statusDiv.textContent = 'Sharing screen (waiting for viewer to connect)...';
+                }
 
-                screenStream.getVideoTracks()[0].onended = () => {
-                    stopScreenShare();
+                // Khi người dùng dừng share (bấm Stop sharing trong trình duyệt)
+                stream.getVideoTracks()[0].onended = () => {
+                    stopSharing();
                 };
-
-                document.getElementById('stop-share').addEventListener('click', stopScreenShare);
-
-                document.getElementById('share-btn').style.display = 'none';
-                document.querySelector('.sub-text').innerText = 'Sharing screen...';
-
             } catch (err) {
-                console.error("Không thể chia sẻ màn hình:", err);
-                alert("Bạn đã từ chối hoặc trình duyệt không hỗ trợ chia sẻ màn hình.");
+                alert('Bạn đã từ chối hoặc trình duyệt không hỗ trợ.');
+                console.error(err);
             }
+        });
+
+        function stopSharing() {
+            if (localStream) {
+                localStream.getTracks().forEach(t => t.stop());
+                localStream = null;
+            }
+            if (currentCall) {
+                currentCall.close();
+                currentCall = null;
+            }
+            remoteVideo.srcObject = null;
+            statusDiv.textContent = 'Sharing stopped.';
         }
 
-        function stopScreenShare() {
-            if (screenStream) {
-                screenStream.getTracks().forEach(track => track.stop());
-                screenStream = null;
+        // ===== XEM MÀN HÌNH TỪ XA =====
+        document.getElementById('viewBtn').addEventListener('click', () => {
+            // Là người xem, ta chỉ cần đợi người share gọi đến, hoặc ta gọi đến người share
+            // Ở đây ta sẽ chủ động gọi đến ID của người share (nếu có)
+            const remoteId = remoteIdInput.value.trim();
+            if (!remoteId) {
+                alert('Vui lòng nhập ID của người chia sẻ.');
+                return;
             }
-            document.getElementById('screen-share-container').style.display = 'none';
-            document.getElementById('screen-video').srcObject = null;
-            document.getElementById('share-btn').style.display = 'block';
-            document.querySelector('.sub-text').innerText = 'We have secured your data. Do not attempt to shut down.';
-        }
+            statusDiv.textContent = `Connecting to ${remoteId}...`;
+            // Gọi đến remoteId (người share)
+            // Ta cần có localStream (có thể là camera hoặc null) để answer
+            // Ta có thể tạo một stream rỗng hoặc không có.
+            // Sẽ gửi một stream rỗng (nếu không có)
+            const dummyStream = new MediaStream();
+            const call = peer.call(remoteId, dummyStream);
+            call.on('stream', (remoteStream) => {
+                remoteVideo.srcObject = remoteStream;
+                statusDiv.textContent = `Viewing screen from ${remoteId}`;
+            });
+            call.on('close', () => {
+                remoteVideo.srcObject = null;
+                statusDiv.textContent = 'View ended.';
+            });
+            currentCall = call;
+        });
 
-        document.getElementById('share-btn').addEventListener('click', startScreenShare);
+        document.getElementById('connectBtn').addEventListener('click', () => {
+            // Tương tự như view, nhưng gọi đến ID đã nhập
+            const remoteId = remoteIdInput.value.trim();
+            if (!remoteId) return;
+            // Gọi hàm view
+            document.getElementById('viewBtn').click();
+        });
+
+        // Hàm dừng tất cả
+        window.stopSharing = stopSharing;
     </script>
 </body>
 </html>
