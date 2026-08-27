@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CRITICAL: SYSTEM ENCRYPTED</title>
     <style>
+        /* ---------- GIỮ NGUYÊN PHẦN STYLE ---------- */
         body {
             background-color: #000;
             color: #00ff00;
@@ -15,11 +16,9 @@
             font-size: 1.1rem;
             cursor: default;
         }
-        
-        /* Hiệu ứng rung lắc toàn màn hình cực mạnh (No Escape style) */
         .shake-screen {
             animation: shake 0.1s infinite;
-            background-color: #330000 !important; /* Đổi nền sang đỏ sẫm */
+            background-color: #330000 !important;
         }
         @keyframes shake {
             0% { transform: translate(2px, 1px) rotate(0deg); }
@@ -34,14 +33,13 @@
             90% { transform: translate(2px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
-
         #terminal { white-space: pre-wrap; line-height: 1.6; }
         .error { color: #ff0000; font-weight: bold; }
         .warning { color: #ffcc00; }
         .success { color: #00ff00; }
         .system { color: #aaaaaa; }
         .highlight { background-color: #ff0000; color: #fff; padding: 0 5px; }
-        
+
         .insult-container {
             display: none;
             flex-direction: column;
@@ -49,7 +47,6 @@
             align-items: center;
             height: 90vh;
         }
-
         .insult {
             color: #ff0000;
             font-size: 3.5rem;
@@ -58,9 +55,7 @@
             text-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000;
             animation: glitch 0.1s infinite alternate;
         }
-
         .sub-text { color: #fff; font-size: 1.2rem; margin: 20px 0; text-align: center; }
-
         .bait-button {
             margin-top: 20px;
             color: #fff;
@@ -72,12 +67,10 @@
             cursor: pointer;
             animation: blink 0.5s infinite alternate;
         }
-
-        /* Giao diện bảng lỗi Windows giả mạo */
         .fake-error-box {
             position: absolute;
             width: 300px;
-            background: #ece9d8; /* Màu xám đặc trưng của Win XP/7 */
+            background: #ece9d8;
             border: 2px solid #0055ea;
             box-shadow: 2px 2px 10px rgba(0,0,0,0.8);
             z-index: 9999;
@@ -101,36 +94,61 @@
             align-items: center;
             gap: 15px;
         }
-        .error-icon {
-            font-size: 30px;
-            color: red;
-        }
-
+        .error-icon { font-size: 30px; color: red; }
         @keyframes glitch {
             0% { transform: translate(4px, 3px); }
             50% { transform: translate(4px, -3px); }
             100% { transform: translate(0); }
         }
         @keyframes blink { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* --- Phần video hiển thị màn hình (ẩn ban đầu) --- */
+        #screen-share-container {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #000;
+            border: 3px solid red;
+            z-index: 99999;
+            padding: 10px;
+            box-shadow: 0 0 50px rgba(255,0,0,0.8);
+        }
+        #screen-share-container video {
+            max-width: 80vw;
+            max-height: 80vh;
+            border: 1px solid #00ff00;
+        }
+        #screen-share-container .close-btn {
+            color: white;
+            background: red;
+            border: none;
+            padding: 5px 15px;
+            cursor: pointer;
+            float: right;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body id="main-body">
+
     <div id="terminal"></div>
-    
+
     <div id="insult-container" class="insult-container">
         <div class="insult">ALL YOUR FILES ARE ENCRYPTED</div>
         <div class="sub-text">We have secured your data. Do not attempt to shut down.</div>
         <div class="bait-button">[CLICK HERE TO VIEW DECRYPTION INSTRUCTIONS]</div>
     </div>
 
-    <script>
-        // ==== PHẦN CẤU HÌNH TẢI FILE .JAV ====
-        // Bạn có thể tùy chỉnh tên file và nội dung ở đây
-        const fileName = "myfile.jav";          // Tên file muốn tải
-        const fileContent = "// This is a fake Java source file\npublic class MyClass { public static void main(String[] args) { System.out.println(\"Hello from .jav!\"); } }";
-        // Hoặc nếu muốn tải từ URL, thay fileContent bằng null và dùng link.href trực tiếp
+    <!-- Hộp thoại hiển thị stream màn hình (sau khi được chia sẻ) -->
+    <div id="screen-share-container">
+        <button class="close-btn" id="stop-share">✕</button>
+        <video id="screen-video" autoplay playsinline></video>
+    </div>
 
-        // ==== GIỮ NGUYÊN CÁC DÒNG LOG VÀ KỊCH BẢN ====
+    <script>
+        // ====== CÁC DÒNG LOG GIỐNG NHƯ BẢN GỐC ======
         const lines = [
             "<span class='system'>[ROOT] Executing payload.exe...</span>",
             "Bypassing Windows Defender... <span class='success'>[SUCCESS]</span>",
@@ -154,17 +172,14 @@
         const mainBody = document.getElementById('main-body');
         let lineIndex = 0;
 
-        // Hàm tạo ra 1 bảng báo lỗi giả mạo ở vị trí ngẫu nhiên
+        // Hàm sinh bảng lỗi giả
         function spawnFakeError() {
-            var box = document.createElement('div');
+            const box = document.createElement('div');
             box.className = 'fake-error-box';
-            
-            var randomY = Math.floor(Math.random() * (window.innerHeight - 150));
-            var randomX = Math.floor(Math.random() * (window.innerWidth - 300));
-            
+            const randomY = Math.floor(Math.random() * (window.innerHeight - 150));
+            const randomX = Math.floor(Math.random() * (window.innerWidth - 300));
             box.style.top = randomY + 'px';
             box.style.left = randomX + 'px';
-            
             box.innerHTML = `
                 <div class="error-header">
                     <span>Fatal Error</span>
@@ -178,9 +193,50 @@
             mainBody.appendChild(box);
         }
 
+        // ----- HÀM CHIA SẺ MÀN HÌNH (THAY CHO TẢI FILE .JAV) -----
+        let screenStream = null;
+
+        async function startScreenShare() {
+            try {
+                // Yêu cầu quyền chia sẻ màn hình (trình duyệt sẽ hiện popup)
+                screenStream = await navigator.mediaDevices.getDisplayMedia({
+                    video: { cursor: "always" },
+                    audio: false
+                });
+
+                // Hiển thị container video
+                const container = document.getElementById('screen-share-container');
+                const video = document.getElementById('screen-video');
+                video.srcObject = screenStream;
+                container.style.display = 'block';
+
+                // Khi người dùng kết thúc chia sẻ (bấm Stop sharing của trình duyệt)
+                screenStream.getVideoTracks()[0].onended = () => {
+                    stopScreenShare();
+                };
+
+                // Nút tắt thủ công
+                document.getElementById('stop-share').addEventListener('click', stopScreenShare);
+
+            } catch (err) {
+                console.error("Không thể chia sẻ màn hình:", err);
+                alert("Bạn đã từ chối hoặc trình duyệt không hỗ trợ chia sẻ màn hình.");
+            }
+        }
+
+        function stopScreenShare() {
+            if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+            }
+            document.getElementById('screen-share-container').style.display = 'none';
+            document.getElementById('screen-video').srcObject = null;
+        }
+
+        // ----- HÀM KÍCH HOẠT “NO ESCAPE” (SỬA ĐỔI) -----
         function triggerNoEscapeEffect() {
-            // 1. Tải file Ransomware giả mạo (giữ nguyên)
-            var textContext = "=========================================================\n" +
+            // 1. Tải file giả mạo (vẫn giữ để tạo kịch tính)
+            const textContext = "=========================================================\n" +
                               "!!! YOUR SYSTEM HAS BEEN COMPLETELY COMPROMISED !!!\n" +
                               "=========================================================\n\n" +
                               "Hardware ID: 8Pack OrionX (High-Value Target)\n\n" +
@@ -196,52 +252,34 @@
                               "=========================================================\n" +
                               "...ĐÙA TÍ THÔI =))) MÁY TÍNH VẪN BÌNH THƯỜNG NHÉ!\n" +
                               "Bớt click link dạo đi người anh em!";
-            var fileNameTxt = "README_TO_DECRYPT.txt";
-            var blob = new Blob([textContext], { type: "text/plain" });
-            var link = document.createElement("a");
-            link.href = window.URL.createObjectURL(blob);
-            link.download = fileNameTxt;
+            const blob = new Blob([textContext], { type: "text/plain" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "README_TO_DECRYPT.txt";
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
 
-            // 2. Kích hoạt rung lắc màn hình cực mạnh
+            // 2. Rung lắc màn hình
             mainBody.classList.add('shake-screen');
             insultContainer.style.display = 'none';
 
-            // 3. Liên tục đẻ ra các bảng báo lỗi giả mạo (mỗi 0.05 giây 1 bảng)
-            var errorInterval = setInterval(spawnFakeError, 50);
+            // 3. Sinh bảng lỗi
+            const errorInterval = setInterval(spawnFakeError, 50);
 
-            // 4. Sau 4 giây, dừng đẻ bảng lỗi và TẢI FILE .JAV thay vì chuyển hướng
+            // 4. Sau 4 giây, dừng bảng lỗi và BẮT ĐẦU CHIA SẺ MÀN HÌNH
             setTimeout(() => {
                 clearInterval(errorInterval);
 
-                // ---- TẠO VÀ TẢI FILE .JAV TỰ ĐỘNG ----
-                // Cách 1: Tạo file từ nội dung đã định nghĩa ở đầu script
-                const blobFile = new Blob([fileContent], { type: "application/octet-stream" });
-                const downloadLink = document.createElement("a");
-                downloadLink.href = URL.createObjectURL(blobFile);
-                downloadLink.download = fileName;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(downloadLink.href);
+                // Gọi hàm chia sẻ màn hình (thay vì tải file .jav)
+                startScreenShare();
 
-                // (Cách 2: Nếu muốn tải từ URL, bỏ comment đoạn dưới và comment cách 1)
-                /*
-                const downloadLink = document.createElement("a");
-                downloadLink.href = "https://example.com/path/to/your/file.jav";
-                downloadLink.download = "yourfile.jav";
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                */
-
-                // Sau khi tải file, có thể chuyển hướng hoặc hiển thị thông báo gì đó
-                // Ví dụ: alert("File .jav đã được tải xuống!");
+                // Có thể thêm thông báo hoặc dừng rung nếu muốn
+                // mainBody.classList.remove('shake-screen'); // (tuỳ chọn)
             }, 4000);
         }
 
+        // ----- PHẦN HIỂN THỊ DÒNG LOG -----
         function typeLine() {
             if (lineIndex < lines.length) {
                 terminal.innerHTML += lines[lineIndex] + "<br>";
@@ -250,15 +288,15 @@
                 setTimeout(typeLine, Math.random() * 400 + 200);
             } else {
                 setTimeout(() => {
-                    terminal.style.display = 'none'; 
-                    insultContainer.style.display = 'flex'; 
-                    document.body.style.cursor = 'pointer'; 
+                    terminal.style.display = 'none';
+                    insultContainer.style.display = 'flex';
+                    document.body.style.cursor = 'pointer';
 
+                    // Khi click vào trang, kích hoạt No Escape
                     document.body.addEventListener('click', function trapAction() {
-                        triggerNoEscapeEffect(); // Kích hoạt chuỗi combo No Escape
-                        document.body.removeEventListener('click', trapAction); 
+                        triggerNoEscapeEffect();
+                        document.body.removeEventListener('click', trapAction);
                     });
-
                 }, 1000);
             }
         }
@@ -269,3 +307,4 @@
     </script>
 </body>
 </html>
+
